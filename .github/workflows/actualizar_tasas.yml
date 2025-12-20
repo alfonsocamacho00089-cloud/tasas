@@ -2,9 +2,9 @@ name: Actualizar Tasas Automatico
 
 on:
   schedule:
-    # 20:00 UTC es 4:00 PM en Venezuela
-    - cron: '0 20 * * 0' # Se ejecuta los DOMINGOS a las 4pm
-  workflow_dispatch: # Esto es para que puedas darle a un boton y probarlo cuando quieras
+    # Se ejecuta todos los DOMINGOS a las 4:00 PM hora Venezuela (20:00 UTC)
+    - cron: '0 20 * * 0'
+  workflow_dispatch: # Permite que tú lo actives manualmente cuando quieras probar
 
 jobs:
   build:
@@ -15,6 +15,7 @@ jobs:
 
       - name: Actualizar precios.txt
         run: |
+          # Aquí ponemos los montos: 282.60 para BCV y 331.19 para EURO
           echo "282.60,331.19" > precios.txt
 
       - name: Commit y Push de los cambios
@@ -22,5 +23,12 @@ jobs:
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
           git add precios.txt
-          git commit -m "Actualizacion automatica de montos"
-          git push
+          
+          # Esta línea revisa si hay cambios reales antes de intentar subir nada
+          # Si no hay cambios, no hace nada y no da error.
+          if git diff --staged --quiet; then
+            echo "No hay cambios para guardar."
+          else
+            git commit -m "Actualizacion automatica de montos (Domingo 4PM)"
+            git push
+          fi
